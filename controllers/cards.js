@@ -28,12 +28,14 @@ module.exports.createCard = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      res.send(card);
+      if (card == null) {
+        res.status(404).send({ message: "Карточка не найдена" });
+      } else {
+        res.send({ data: card });
+      }
     })
     .catch((err) => {
-      if (req.params.cardId.length != 25) {
-        res.status(400).send({ message: "Не правильный ID" });
-      } else if (err.name === "CastError") {
+      if (err.name === "CastError") {
         res.status(404).send({ message: "Карточка не найдена" });
       } else {
         res.status(500).send({ message: "Произошла ошибка" });

@@ -1,9 +1,9 @@
-const express = require("express"); //import express
+const express = require("express");
 const { PORT = 3000 } = process.env;
 const path = require("path");
 
 const mongoose = require("mongoose");
-const app = express(); //запускаем приложение
+const app = express();
 mongoose.connect("mongodb://localhost:27017/mestodb");
 
 app.use(express.json());
@@ -23,9 +23,9 @@ app.use("/:error", (req, res) => {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/users", (req, res) => {
-  res.send("hello");
-});
+// app.get("/users", (req, res) => {
+//   res.send("hello");
+// });
 // app.get("/users/:id", (req, res) => {
 //   const { id } = req.params;
 // });

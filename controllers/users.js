@@ -23,15 +23,13 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserId = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
-      // if (user == null) {
-      //   res.status(404).send({ message: "Пользователь не найден" });
-      // }
-      res.send({ data: user });
+      if (user == null) {
+        res.status(404).send({ message: "Пользователь не найден" });
+      } else {
+        res.send({ data: user });
+      }
     })
     .catch((err) => {
-      // if (req.params.userId.length != 25) {
-      //   res.status(400).send({ message: "Не правильный ID" });
-      // }
       if (err.name === "ValidationError") {
         res.status(400).send({ message: "Переданы некорректные данные" });
       } else if (err.name === "CastError") {
