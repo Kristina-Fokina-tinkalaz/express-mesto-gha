@@ -33,7 +33,7 @@ module.exports.getUserId = (req, res) => {
         res.status(400).send({ message: "Переданы некорректные данные" });
       }
       if (err.name === "CastError") {
-        res.status(400).send({ message: "Пользователь не найден" });
+        res.status(404).send({ message: "Пользователь не найден" });
       } else {
         res.status(500).send({ message: "Произошла ошибка" });
       }
