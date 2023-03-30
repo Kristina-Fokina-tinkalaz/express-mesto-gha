@@ -1,10 +1,14 @@
 const Card = require("../models/card");
-
+const ERROR_VALID = 400;
+const ERROR_NOTFOUND = 404;
+const ERROR_DEF = 500;
 module.exports.findCard = (req, res) => {
   Card.find({})
     .populate(["owner", "likes"])
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(500).send({ message: "Произошла ошибка" }));
+    .catch((err) =>
+      res.status(ERROR_DEF).send({ message: "Произошла ошибка" })
+    );
 };
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
@@ -12,16 +16,15 @@ module.exports.createCard = (req, res) => {
     name,
     link,
     owner: req.user._id,
-    likes: [],
   })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === "ValidationError") {
         res
-          .status(400)
+          .status(ERROR_VALID)
           .send({ message: "Переданы некорректные данные карточки" });
       } else {
-        res.status(500).send({ err });
+        res.status(ERROR_DEF).send({ message: "Произошла ошибка" });
       }
     });
 };
@@ -29,16 +32,18 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (card == null) {
-        res.status(404).send({ message: "Карточка не найдена" });
+        res.status(ERROR_NOTFOUND).send({ message: "Карточка не найдена" });
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(404).send({ message: "Карточка не найдена" });
+        res
+          .status(ERROR_NOTFOUND)
+          .send({ message: "Передан невалидный ID карточки" });
       } else {
-        res.status(500).send({ message: "Произошла ошибка" });
+        res.status(ERROR_DEF).send({ message: "Произошла ошибка" });
       }
     });
 };
@@ -50,16 +55,18 @@ module.exports.putLike = (req, res) => {
   )
     .then((card) => {
       if (card == null) {
-        res.status(404).send({ message: "карточка не найдена" });
+        res.status(ERROR_NOTFOUND).send({ message: "карточка не найдена" });
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({ message: "Пользователь не найден" });
+        res.status(ERROR_VALID).send({
+          message: "Передан невалидный ID карточки",
+        });
       } else {
-        res.status(500).send({ err });
+        res.status(ERROR_DEF).send({ message: "Произошла ошибка" });
       }
     });
 };
@@ -71,16 +78,18 @@ module.exports.deleteLike = (req, res) => {
   )
     .then((card) => {
       if (card == null) {
-        res.status(404).send({ message: "карточка не найдена" });
+        res.status(ERROR_NOTFOUND).send({ message: "карточка не найдена" });
       } else {
         res.send({ data: card });
       }
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({ message: "Пользователь не найден" });
+        res
+          .status(ERROR_VALID)
+          .send({ message: "Передан невалидный ID карточки" });
       } else {
-        res.status(500).send({ err });
+        res.status(ERROR_DEF).send({ message: "Произошла ошибка" });
       }
     });
 };

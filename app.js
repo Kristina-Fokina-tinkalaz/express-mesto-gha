@@ -17,11 +17,11 @@ app.use((req, res, next) => {
 
 app.use("/cards", require("./routes/cards"));
 app.use("/users", require("./routes/users"));
-app.use("/:error", (req, res) => {
-  res.status(404).send({ message: "Произошла ошибка" });
+app.use((req, res) => {
+  res.status(404).send({ message: "Адрес не существует" });
 });
 
-app.use(express.static(path.join(__dirname, "public")));
+// app.use(express.static(path.join(__dirname, "public")));
 
 // app.get("/users", (req, res) => {
 //   res.send("hello");
