@@ -22,6 +22,4 @@ app.use('/users', require('./routes/users'));
 app.use((req, res) => {
   res.status(404).send({ message: 'Адрес не существует' });
 });
-app.listen(PORT, () => {
-  console.log('Privetiki :)');
-});
+app.listen(PORT);
