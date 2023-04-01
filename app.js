@@ -1,7 +1,10 @@
 const express = require('express');
 
-const { PORT = 3000 } = process.env;
 const mongoose = require('mongoose');
+
+const { ERROR_NOTFOUND } = require('./errors');
+
+const { PORT = 3000 } = process.env;
 
 const app = express();
 mongoose.connect('mongodb://localhost:27017/mestodb');
@@ -20,6 +23,6 @@ app.use('/cards', require('./routes/cards'));
 app.use('/users', require('./routes/users'));
 
 app.use((req, res) => {
-  res.status(404).send({ message: 'Адрес не существует' });
+  res.status(ERROR_NOTFOUND).send({ message: 'Адрес не существует' });
 });
 app.listen(PORT);
