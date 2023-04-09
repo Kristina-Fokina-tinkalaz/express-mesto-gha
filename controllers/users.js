@@ -10,17 +10,16 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  bcrypt.hash(password, 10).then((hash) => User.create({
-    name, about, avatar, email, password: hash,
-  })
-    .then((user) => {
-      // const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
-      if (!validator.isEmail(user.email)) {
-        throw new NotValidError('Некорректный email по данным validator.js');
-      } else {
-      // if (!user.avatar.match(digitRegExp)) {
-      //   throw new NotValidError('В поле для аватара должна быть передана ссылка');
-      // } else {
+  const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
+  if (!validator.isEmail(email)) {
+    throw new NotValidError('Некорректный email по данным validator.js');
+  } else if (!avatar.match(digitRegExp)) {
+    throw new NotValidError('В поле для аватара должна быть передана ссылка');
+  } else {
+    bcrypt.hash(password, 10)
+      .then((hash) => User.create({
+        name, about, avatar, email, password: hash,
+      }).then((user) => {
         res.send({
           data: {
             name: user.name,
@@ -30,9 +29,8 @@ module.exports.createUser = (req, res, next) => {
             _id: user._id,
           },
         });
-      }
-    })
-    .catch(next));
+      }).catch(next));
+  }
 };
 
 module.exports.getUsers = (req, res, next) => {
