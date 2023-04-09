@@ -14,13 +14,13 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password: hash,
   })
     .then((user) => {
-      const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
+      // const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
       if (!validator.isEmail(user.email)) {
         throw new NotValidError('Некорректный email по данным validator.js');
-      } else
-      if (!user.avatar.match(digitRegExp)) {
-        throw new NotValidError('В поле для аватара должна быть передана ссылка');
       } else {
+      // if (!user.avatar.match(digitRegExp)) {
+      //   throw new NotValidError('В поле для аватара должна быть передана ссылка');
+      // } else {
         res.send({
           data: {
             name: user.name,
@@ -37,7 +37,18 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((user) => res.send({ data: user }))
+    .then((users) => {
+      const result = [];
+      users.forEach((user) => {
+        result.push({
+          _id: user._id,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+        });
+      });
+      res.send(result);
+    })
     .catch(next);
 };
 module.exports.getMe = (req, res, next) => {
