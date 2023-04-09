@@ -4,6 +4,7 @@ const validator = require('validator');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const NotValidError = require('../errors/not-valid-err');
+// const AuthorizationError = require('../errors/authorization-err');
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -20,7 +21,15 @@ module.exports.createUser = (req, res, next) => {
       if (!user.avatar.match(digitRegExp)) {
         throw new NotValidError('В поле для аватара должна быть передана ссылка');
       } else {
-        res.send({ data: user });
+        res.send({
+          data: {
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+            email: user.email,
+            _id: user._id,
+          },
+        });
       }
     })
     .catch(next));
@@ -84,7 +93,7 @@ module.exports.updateAvatar = (req, res, next) => {
 };
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({ token: jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' }) });
     })
