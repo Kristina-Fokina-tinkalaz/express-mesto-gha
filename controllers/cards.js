@@ -1,7 +1,8 @@
 const Card = require('../models/card');
 
 const NotFoundError = require('../errors/not-found-err');
-const NotValidError = require('../errors/not-valid-err');
+const Forbidden = require('../errors/forbidden-err');
+// const NotValidError = require('../errors/not-valid-err');
 
 module.exports.findCard = (req, res, next) => {
   Card.find({})
@@ -17,22 +18,24 @@ module.exports.createCard = (req, res, next) => {
     owner: req.user._id,
   })
     .then((card) => {
-      const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
-      if (!card.link.match(digitRegExp)) {
-        throw new NotValidError('В поле для картинки должна быть передана ссылка');
-      }
+      // const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
+      // if (!card.link.match(digitRegExp)) {
+      //   throw new NotValidError('В поле для картинки должна быть передана ссылка');
+      // } else {
       res.send({ data: card });
+      // }
     })
     .catch(next);
 };
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (card === null) {
         throw new NotFoundError('Карточка не найдена');
       } else if (card.owner !== req.user._id) {
-        throw new NotFoundError('Это не ваша карточка');
+        throw new Forbidden('Это не ваша карточка');
       } else {
+        Card.findByIdAndRemove(req.params.cardId);
         res.send({ data: card });
       }
     })

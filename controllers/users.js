@@ -42,16 +42,30 @@ module.exports.getUsers = (req, res, next) => {
 };
 module.exports.getMe = (req, res, next) => {
   User.findById(req.user._id)
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send({
+      data: {
+        _id: user._id,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      },
+    }))
     .catch(next);
 };
 module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (user == null) {
-        throw new NotValidError('Передан невалидный ID пользователя');
+        throw new NotFoundError('Передан невалидный ID пользователя');
       } else {
-        res.send({ data: user });
+        res.send({
+          data: {
+            _id: user._id,
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+          },
+        });
       }
     })
     .catch(next);
@@ -67,7 +81,14 @@ module.exports.updateProfile = (req, res, next) => {
       if (user == null) {
         throw new NotFoundError('Пользователь не найден');
       } else {
-        res.send({ data: user });
+        res.send({
+          data: {
+            _id: user._id,
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+          },
+        });
       }
     })
     .catch(next);
@@ -86,7 +107,14 @@ module.exports.updateAvatar = (req, res, next) => {
       } else if (user == null) {
         throw new NotFoundError('Пользователь не найден');
       } else {
-        res.send({ data: user });
+        res.send({
+          data: {
+            _id: user._id,
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+          },
+        });
       }
     })
     .catch(next);

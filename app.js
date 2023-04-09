@@ -4,7 +4,7 @@ const router = require('express').Router();
 const { errors } = require('celebrate');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/not-found-err');
-const DataExistError = require('./errors/data-exist-err');
+// const DataExistError = require('./errors/data-exist-err');
 
 const { PORT = 3000 } = process.env;
 
@@ -22,9 +22,11 @@ app.use(() => {
   throw new NotFoundError('Такой страницы не существует');
 });
 app.use(errors());
+
 app.use((err, req, res, next) => {
   if (err.code === 11000) {
-    throw new DataExistError('Такой email уже зарегистрирован');
+    res.status(409).send({ message: 'Такой email уже зарегистрирован' });
+    // throw new DataExistError('Такой email уже зарегистрирован');
   } else {
     const { statusCode = 500, message } = err;
     res.status(statusCode).send({
