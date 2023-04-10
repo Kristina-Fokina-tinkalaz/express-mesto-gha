@@ -12,21 +12,29 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   // const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
-  if (!validator.isEmail(email)) {
+  if (!validator.isEmail(email, { require_protocol: true })) {
     throw new NotValidError('Некорректный email по данным validator.js');
+  } else if (!validator.isURL(avatar, { require_protocol: true })) {
+    throw new NotValidError('Некорректая ссылка на аватар по данным validator.js');
   } else {
     bcrypt.hash(password, 10)
       .then((hash) => User.create({
         name, about, avatar, email, password: hash,
       }).then((user) => {
         res.send({
-          data: { user },
+          data: {
+            _id: user._id,
+            email: user.email,
+            name: user.name,
+            about: user.about,
+            avatar: user.avatar,
+          },
         });
       }).catch((err) => {
         if (err.name === 'ValidationEror') {
           next(new NotValidError('Некорректные данные'));
         } else if (err.code === 11000) {
-          throw new DataExistError('Такой email уже зарегистрирован');
+          next(new DataExistError('Такой email уже зарегистрирован'));
         } else {
           next(err);
         }

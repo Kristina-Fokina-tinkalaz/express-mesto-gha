@@ -13,7 +13,7 @@ module.exports.findCard = (req, res, next) => {
 };
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-  if (!validator.isUrl(link)) {
+  if (!validator.isURL(link, { require_protocol: true })) {
     throw new NotValidError('Некорректный link по данным validator.js');
   } else {
     Card.create({
