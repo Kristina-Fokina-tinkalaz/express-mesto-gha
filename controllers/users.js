@@ -14,7 +14,7 @@ module.exports.createUser = (req, res, next) => {
   // const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
   if (!validator.isEmail(email, { require_protocol: true })) {
     throw new NotValidError('Некорректный email по данным validator.js');
-  } else if (!validator.isURL(avatar, { require_protocol: true })) {
+  } else if (avatar && !validator.isURL(avatar, { require_protocol: true })) {
     throw new NotValidError('Некорректая ссылка на аватар по данным validator.js');
   } else {
     bcrypt.hash(password, 10)
@@ -34,7 +34,7 @@ module.exports.createUser = (req, res, next) => {
         if (err.name === 'ValidationEror') {
           next(new NotValidError('Некорректные данные'));
         } else if (err.code === 11000) {
-          next(new DataExistError('Такой email уже зарегистрирован'));
+          throw next(new DataExistError('Такой email уже зарегистрирован'));
         } else {
           next(err);
         }
@@ -123,34 +123,38 @@ module.exports.updateProfile = (req, res, next) => {
 };
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      // const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
-      if (user == null) {
-        throw new NotFoundError('Пользователь не найден');
-      } else {
-        res.send({
-          data: {
-            _id: user._id,
-            email: user.email,
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-          },
-        });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationEror') {
-        next(new NotValidError('Некорректные данные'));
-      } else {
-        next(err);
-      }
-    });
+  if (!validator.isURL(avatar, { require_protocol: true })) {
+    throw new NotValidError('Некорректая ссылка на аватар по данным validator.js');
+  } else {
+    User.findByIdAndUpdate(
+      req.user._id,
+      { avatar },
+      { new: true, runValidators: true },
+    )
+      .then((user) => {
+        // const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
+        if (user == null) {
+          throw new NotFoundError('Пользователь не найден');
+        } else {
+          res.send({
+            data: {
+              _id: user._id,
+              email: user.email,
+              name: user.name,
+              about: user.about,
+              avatar: user.avatar,
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        if (err.name === 'ValidationEror') {
+          next(new NotValidError('Некорректные данные'));
+        } else {
+          next(err);
+        }
+      });
+  }
 };
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
