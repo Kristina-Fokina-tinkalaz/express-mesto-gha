@@ -9,11 +9,11 @@ const userSchema = new mongoose.Schema({
   about: {
     type: String, minlength: 2, maxlength: 30, default: 'Исследователь',
   },
-  avatar: { type: String, default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png' },
+  avatar: { type: String, pattern: /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g, default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png' },
   email: {
     type: String, required: true, unique: true, select: false,
   },
-  password: { type: String, required: true },
+  password: { type: String, required: true, select: false },
 });
 
 userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {

@@ -4,32 +4,33 @@ const validator = require('validator');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const NotValidError = require('../errors/not-valid-err');
+const DataExistError = require('../errors/data-exist-err');
 // const AuthorizationError = require('../errors/authorization-err');
 
 module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
+  // const digitRegExp = /^https?:\/\/[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
   if (!validator.isEmail(email)) {
     throw new NotValidError('Некорректный email по данным validator.js');
-  } else if (!avatar.match(digitRegExp)) {
-    throw new NotValidError('В поле для аватара должна быть передана ссылка');
   } else {
     bcrypt.hash(password, 10)
       .then((hash) => User.create({
         name, about, avatar, email, password: hash,
       }).then((user) => {
         res.send({
-          data: {
-            name: user.name,
-            about: user.about,
-            avatar: user.avatar,
-            email: user.email,
-            _id: user._id,
-          },
+          data: { user },
         });
-      }).catch(next));
+      }).catch((err) => {
+        if (err.name === 'ValidationEror') {
+          next(new NotValidError('Некорректные данные'));
+        } else if (err.code === 11000) {
+          throw new DataExistError('Такой email уже зарегистрирован');
+        } else {
+          next(err);
+        }
+      }));
   }
 };
 
@@ -40,6 +41,7 @@ module.exports.getUsers = (req, res, next) => {
       users.forEach((user) => {
         result.push({
           _id: user._id,
+          email: user.email,
           name: user.name,
           about: user.about,
           avatar: user.avatar,
@@ -54,6 +56,7 @@ module.exports.getMe = (req, res, next) => {
     .then((user) => res.send({
       data: {
         _id: user._id,
+        email: user.email,
         name: user.name,
         about: user.about,
         avatar: user.avatar,
@@ -70,6 +73,7 @@ module.exports.getUserId = (req, res, next) => {
         res.send({
           data: {
             _id: user._id,
+            email: user.email,
             name: user.name,
             about: user.about,
             avatar: user.avatar,
@@ -93,6 +97,7 @@ module.exports.updateProfile = (req, res, next) => {
         res.send({
           data: {
             _id: user._id,
+            email: user.email,
             name: user.name,
             about: user.about,
             avatar: user.avatar,
@@ -100,7 +105,13 @@ module.exports.updateProfile = (req, res, next) => {
         });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationEror') {
+        next(new NotValidError('Некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
 };
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
@@ -110,15 +121,14 @@ module.exports.updateAvatar = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
-      const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
-      if (!user.avatar.match(digitRegExp)) {
-        throw new NotValidError('В поле для аватара должна быть передана ссылка');
-      } else if (user == null) {
+      // const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
+      if (user == null) {
         throw new NotFoundError('Пользователь не найден');
       } else {
         res.send({
           data: {
             _id: user._id,
+            email: user.email,
             name: user.name,
             about: user.about,
             avatar: user.avatar,
@@ -126,7 +136,13 @@ module.exports.updateAvatar = (req, res, next) => {
         });
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationEror') {
+        next(new NotValidError('Некорректные данные'));
+      } else {
+        next(err);
+      }
+    });
 };
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
