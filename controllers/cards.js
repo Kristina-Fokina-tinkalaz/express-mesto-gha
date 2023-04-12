@@ -1,4 +1,3 @@
-const validator = require('validator');
 const Card = require('../models/card');
 
 const NotFoundError = require('../errors/not-found-err');
@@ -13,26 +12,21 @@ module.exports.findCard = (req, res, next) => {
 };
 module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-  if (!validator.isURL(link, { require_protocol: true })) {
-    throw new NotValidError('Некорректный link по данным validator.js');
-  } else {
-    Card.create({
-      name,
-      link,
-      owner: req.user._id,
+  Card.create({
+    name,
+    link,
+    owner: req.user._id,
+  })
+    .then((card) => {
+      res.send({ data: card });
     })
-      .then((card) => {
-        res.send({ data: card });
-      // }
-      })
-      .catch((err) => {
-        if (err.name === 'ValidationEror') {
-          next(new NotValidError('Некорректные данные при создании карточки'));
-        } else {
-          next(err);
-        }
-      });
-  }
+    .catch((err) => {
+      if (err.name === 'ValidationEror') {
+        next(new NotValidError('Некорректные данные при создании карточки'));
+      } else {
+        next(err);
+      }
+    });
 };
 module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)

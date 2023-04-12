@@ -7,7 +7,7 @@ const {
   updateAvatar,
   getMe,
 } = require('../controllers/users');
-
+const validateURL = require('../errors/validate-url');
 // const digitRegExp = /^https?:\/\/(www.)?[\w.\-_~:/?#[\]@!$&'()*+,;=]*/g;
 
 router.get('/', getUsers);
@@ -27,7 +27,7 @@ router.patch('/me', celebrate({
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required(),
+    avatar: Joi.string().required().custom(validateURL),
   }),
 }), updateAvatar);
 
